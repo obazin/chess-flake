@@ -1,0 +1,8 @@
+[toolchain]
+# Canonical Rust pin for every project in the chess workspace.
+# Edition 2024 requires >= 1.85; 1.95.0 also covers vera (edition 2021).
+# Bump here and every project shell (alexander, pepsin, pgn-sort,
+# chess-graphics, uci-orchestra, vera) follows on next `nix develop`.
+channel = "1.95.0"
+components = ["clippy", "rustfmt", "rust-src"]
+profile = "minimal"
