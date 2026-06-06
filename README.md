@@ -55,7 +55,7 @@ Each project's `flake.nix` is ~10 lines:
 
 ```nix
 {
-  inputs.workspace.url = "git+ssh://git@github.com/obazin/chess-flake.git?ref=main";
+  inputs.workspace.url = "github:obazin/chess-flake";
   outputs = { self, workspace }: {
     devShells = builtins.mapAttrs (system: lib: {
       default = lib.bundles.rustShell { name = "pepsin"; };
@@ -103,3 +103,8 @@ nix flake update rust-overlay   # bump just one input
 
 After bumping + push, each consumer project needs `nix flake update workspace`
 once to pick up the new workspace lock.
+
+## License
+
+MIT — see [LICENSE](./LICENSE). Free to fork, adapt, and use as a template for
+your own polyrepo Nix workspace.
