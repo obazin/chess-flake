@@ -62,17 +62,19 @@
         # webkitgtk_4_1, libsoup_3, openssl here — gated on `stdenv.isLinux`.
         tauriDarwinTools = [ pkgs.pkg-config ];
 
-        # ── Project-specific resources ──────────────────────────────────────
-        # alexander's reproducible PGN corpora (R2-hosted). Empty set today.
-        alexanderDatasets = import ./nix/alexander/datasets.nix;
-        alexanderBenchData = pkgs.linkFarm "alexander-bench-data" (
+        # ── Shared resources ────────────────────────────────────────────────
+        # Reproducible PGN corpora (R2-hosted). Shared across any shell that
+        # needs sample games. Each consuming shell maps it to its own env var.
+        # Empty set today — see nix/pgn-corpora.nix for how to add a corpus.
+        pgnCorporaSpec = import ./nix/pgn-corpora.nix;
+        pgnCorpora = pkgs.linkFarm "pgn-corpora" (
           pkgs.lib.mapAttrsToList (name: d: {
             name = "${name}.pgn";
             path = pkgs.fetchurl {
               inherit (d) url sha256;
               name = "${name}.pgn";
             };
-          }) alexanderDatasets
+          }) pgnCorporaSpec
         );
 
         # ── Shell composer ──────────────────────────────────────────────────
@@ -139,10 +141,14 @@
             packages = rustTools ++ [ pkgs.samply ];
             env = {
               RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
-              ALEXANDER_BENCH_DATA = alexanderBenchData;
+              # alexander's bench code reads $ALEXANDER_BENCH_DATA; the shared
+              # corpora package is exposed as `packages.pgn-corpora` and
+              # routed here. Other shells can route the same package to their
+              # own env var names.
+              ALEXANDER_BENCH_DATA = pgnCorpora;
             };
             hook = ''
-              echo "  bench data: ${alexanderBenchData}"
+              echo "  pgn corpora: ${pgnCorpora}"
             '';
           };
 
@@ -176,7 +182,7 @@
         };
 
         # Buildable artifacts surfaced by the workspace. Add more as needed.
-        packages.alexander-bench-data = alexanderBenchData;
+        packages.pgn-corpora = pgnCorpora;
       }
     );
 }
