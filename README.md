@@ -20,7 +20,7 @@ global store (`~/Library/pnpm`).
 |---|---|---|
 | `alexander` | Rust + bench data | `../alexander-project/` |
 | `pepsin` | Rust | `../pepsin/` |
-| `pgn-sort` | Rust | `../pgn-sort/` |
+| `pgn-tools` | Rust | `../pgn-tools/` |
 | `chess-graphics` | Rust | `../chess-graphics-project/` |
 | `uci-orchestra` | Rust + samply | `../uci-orchestra/` |
 | `vera` | Rust + Node + Tauri | `../vera/` |

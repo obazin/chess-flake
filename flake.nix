@@ -118,8 +118,8 @@
             env.RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           };
 
-          pgn-sort = mkProjectShell {
-            name = "pgn-sort";
+          pgn-tools = mkProjectShell {
+            name = "pgn-tools";
             packages = rustTools;
             env.RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           };
@@ -176,7 +176,7 @@
             packages = commonTools;
             shellHook = ''
               echo "chess-flake · workspace shell"
-              echo "available project shells: alexander, pepsin, pgn-sort, chess-graphics, uci-orchestra, vera, staunton, svelte-chessground"
+              echo "available project shells: alexander, pepsin, pgn-tools, chess-graphics, uci-orchestra, vera, staunton, svelte-chessground"
             '';
           };
         };
