@@ -45,6 +45,12 @@
           rustToolchain # rustc, cargo, clippy, rustfmt, rust-src
           pkgs.rust-analyzer
           pkgs.cargo-nextest
+          # sccache caches compiled rustc outputs by content hash. Wired into
+          # rustEnv via RUSTC_WRAPPER. The cache at ~/.cache/sccache/ is shared
+          # across every Rust project on the host (not just chess-flake), so
+          # building project B after project A finds tokio/serde/etc. already
+          # compiled. Run `sccache --show-stats` to see hit rate.
+          pkgs.sccache
         ];
 
         nodeTools = with pkgs; [
@@ -109,6 +115,10 @@
         # drift is visible (the extras are in the project's own flake).
         rustEnv = {
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+          # Route every rustc invocation through sccache so identical
+          # crate+flags compilations across projects hit the shared cache
+          # instead of recompiling.
+          RUSTC_WRAPPER = "sccache";
         };
 
         bundles = {
