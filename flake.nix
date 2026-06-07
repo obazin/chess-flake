@@ -81,6 +81,26 @@
           }) pgnCorporaSpec
         );
 
+        # ── Shared formatting config ────────────────────────────────────────
+        # Canonical prettier rules owned by the workspace — formatting only,
+        # no plugins (so it can never break a project that lacks one). Built
+        # into the store; Node/Tauri bundles symlink it into the project root
+        # as .prettierrc.json on shell entry, so prettier and its LSP discover
+        # it by walking up the tree. Consumers should gitignore .prettierrc.json.
+        prettierConfig = pkgs.writeText "prettierrc.json" (
+          builtins.toJSON {
+            useTabs = true;
+            tabWidth = 4;
+            printWidth = 100;
+          }
+        );
+
+        # Materializes prettierConfig at the project root. Prepended to the
+        # Node/Tauri bundle hooks so every JS-touching shell enforces it.
+        prettierHook = ''
+          ln -sfn ${prettierConfig} "$(git rev-parse --show-toplevel 2>/dev/null || echo "$PWD")/.prettierrc.json"
+        '';
+
         # ── Primitive shell composer ────────────────────────────────────────
         # Pins CARGO_HOME inside the consumer's project root and exec'es into
         # zsh interactively. Bundles below wrap this with smart defaults.
@@ -146,7 +166,8 @@
               hook ? "",
             }:
             mkProjectShell {
-              inherit name env hook;
+              inherit name env;
+              hook = prettierHook + hook;
               packages = nodeTools ++ extra;
             };
 
@@ -159,7 +180,8 @@
               hook ? "",
             }:
             mkProjectShell {
-              inherit name hook;
+              inherit name;
+              hook = prettierHook + hook;
               packages = rustTools ++ nodeTools ++ tauriDarwinTools ++ extra;
               env = rustEnv // env;
             };
@@ -179,6 +201,7 @@
             rustTools
             nodeTools
             tauriDarwinTools
+            prettierConfig
             mkProjectShell
             bundles
             ;
@@ -192,14 +215,15 @@
           packages = commonTools;
           shellHook = ''
             echo "chess-flake · workspace shell"
-            echo "  lib API: pkgs · rustToolchain · commonTools · rustTools · nodeTools · tauriDarwinTools · mkProjectShell · bundles"
+            echo "  lib API: pkgs · rustToolchain · commonTools · rustTools · nodeTools · tauriDarwinTools · prettierConfig · mkProjectShell · bundles"
             echo "  bundles: rustShell · nodeShell · tauriShell"
-            echo "  packages: pgn-corpora"
+            echo "  packages: pgn-corpora · prettier-config"
           '';
         };
 
         # ── Buildable artifacts surfaced by the workspace ───────────────────
         packages.pgn-corpora = pgnCorpora;
+        packages.prettier-config = prettierConfig;
       }
     );
 }
