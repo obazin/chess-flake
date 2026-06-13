@@ -59,6 +59,7 @@
           nodePackages.typescript-language-server
           nodePackages.svelte-language-server
           tailwindcss-language-server
+          vtsls
           nodePackages.prettier
         ];
 

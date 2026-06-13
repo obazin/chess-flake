@@ -10,7 +10,7 @@ Single source of truth for:
 - One Rust toolchain (`rust-toolchain.toml` here is canonical)
 - One nixpkgs pin → unified `openssl`, `sqlite`, system libs
 - One Node version + `pnpm` across all JS projects
-- LSPs (`rust-analyzer`, `typescript-language-server`, `svelte-language-server`, `tailwindcss-language-server`)
+- LSPs (`rust-analyzer`, `typescript-language-server`, `vtsls`, `svelte-language-server`, `tailwindcss-language-server`)
 - Shared resources (`packages.pgn-corpora`)
 
 This flake **does not** mutualise cargo crate caches or `node_modules` — those
@@ -29,7 +29,7 @@ use a bundle verbatim; projects with extras add them through the knobs.
 | Bundle | Stack | What's inside |
 |---|---|---|
 | `lib.bundles.rustShell` | Rust | `rustToolchain` + `rust-analyzer` + `cargo-nextest` + `sccache`, sets `RUST_SRC_PATH` and `RUSTC_WRAPPER=sccache` |
-| `lib.bundles.nodeShell` | Node | `nodejs_22` + `pnpm` + TS/Svelte/Tailwind LSPs + `prettier` |
+| `lib.bundles.nodeShell` | Node | `nodejs_22` + `pnpm` + TS/VTSLS/Svelte/Tailwind LSPs + `prettier` |
 | `lib.bundles.tauriShell` | Rust + Node + Tauri | `rustShell` ∪ `nodeShell` + `pkg-config` (macOS sysdeps) |
 
 **About `sccache`**: every `rustc` invocation in a rustShell / tauriShell is
