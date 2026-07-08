@@ -90,9 +90,10 @@
         # it by walking up the tree. Consumers should gitignore .prettierrc.json.
         prettierConfig = pkgs.writeText "prettierrc.json" (
           builtins.toJSON {
-            useTabs = true;
+            useTabs = false;
             tabWidth = 4;
             printWidth = 100;
+            singleQuote = true;
           }
         );
 
