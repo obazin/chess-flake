@@ -31,6 +31,31 @@
         # not pin their own toolchain.
         rustToolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
+        # ── Pinned prettier ─────────────────────────────────────────────────
+        # nixpkgs (nixos-25.11) ships prettier 3.6.2, but consumer projects run
+        # the version hoisted into their node_modules (e.g. as a peer of
+        # prettier-plugin-svelte, currently 3.9.4) via `pnpm format` and their
+        # editor-on-save. Pin the same version here — decoupled from the nixpkgs
+        # bump — so the devshell CLI and the editor agree byte-for-byte. Bump in
+        # lockstep with the version consumers hoist.
+        prettier = pkgs.stdenv.mkDerivation rec {
+          pname = "prettier";
+          version = "3.9.4";
+          src = pkgs.fetchurl {
+            url = "https://registry.npmjs.org/prettier/-/prettier-${version}.tgz";
+            hash = "sha256-I2lJ01KIItEXszomEJvV1wo9eCjczVoIBfloQ5iIjIs=";
+          };
+          nativeBuildInputs = [ pkgs.makeWrapper ];
+          installPhase = ''
+            runHook preInstall
+            mkdir -p $out/lib/prettier
+            cp -r . $out/lib/prettier
+            makeWrapper ${pkgs.nodejs_22}/bin/node $out/bin/prettier \
+              --add-flags $out/lib/prettier/bin/prettier.cjs
+            runHook postInstall
+          '';
+        };
+
         # ── Reusable package sets (primitives) ──────────────────────────────
         commonTools = with pkgs; [
           git
@@ -60,7 +85,7 @@
           nodePackages.svelte-language-server
           tailwindcss-language-server
           vtsls
-          nodePackages.prettier
+          prettier # pinned 3.9.4 (see above), not nodePackages.prettier (3.6.2)
         ];
 
         # macOS: Tauri builds against the system WebKit, so the dev shell needs
@@ -219,13 +244,14 @@
             echo "chess-flake · workspace shell"
             echo "  lib API: pkgs · rustToolchain · commonTools · rustTools · nodeTools · tauriDarwinTools · prettierConfig · mkProjectShell · bundles"
             echo "  bundles: rustShell · nodeShell · tauriShell"
-            echo "  packages: pgn-corpora · prettier-config"
+            echo "  packages: pgn-corpora · prettier-config · prettier"
           '';
         };
 
         # ── Buildable artifacts surfaced by the workspace ───────────────────
         packages.pgn-corpora = pgnCorpora;
         packages.prettier-config = prettierConfig;
+        packages.prettier = prettier;
       }
     );
 }
